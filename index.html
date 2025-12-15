@@ -35,9 +35,6 @@
             }).catch(console.error);
         }
 
-        // BrowserDetector compresso
-        !function(e,o){"use strict";function e(e,o){for(var n=0;n<o.length;n++){var r=o[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}var o={chrome:"Google Chrome",brave:"Brave",crios:"Google Chrome",edge:"Microsoft Edge",edg:"Microsoft Edge",fennec:"Mozilla Firefox",jsdom:"JsDOM",mozilla:"Mozilla Firefox",msie:"Microsoft Internet Explorer",opera:"Opera",opios:"Opera",opr:"Opera",rv:"Microsoft Internet Explorer",safari:"Safari",samsungbrowser:"Samsung Browser",electron:"Electron"},n={android:"Android",androidTablet:"Android Tablet",cros:"Chrome OS",fennec:"Android Tablet",ipad:"IPad",iphone:"IPhone",jsdom:"JsDOM",linux:"Linux",mac:"Macintosh",tablet:"Android Tablet",win:"Windows","windows phone":"Windows Phone",xbox:"Microsoft Xbox"},r=function(e){var o=arguments.length>1&&void 0!==arguments[1]?arguments[1]:-1,n=new RegExp("^-?\\d+(?:\\.\\d{0,".concat(o,"})?")),r=Number(e).toString().match(n);return r?r[0]:null},i=function(){return"undefined"!=typeof window?window.navigator:null},t=function(){function t(e){var o;!function(e,o){if(!(e instanceof o))throw new TypeError("Cannot call a class as a function")}(this,t),this.userAgent=e||(null===(o=i())||void 0===o?void 0:o.userAgent)||null}var a,l,s;return a=t,l=[{key:"parseUserAgent",value:function(e){var t,a,l,s={},c=e||this.userAgent||"",d=c.toLowerCase().replace(/\s\s+/g," "),u=/(edge)\/([\w.]+)/.exec(d)||/(edg)[/]([\w.]+)/.exec(d)||/(opr)[/]([\w.]+)/.exec(d)||/(jsdom)[/]([\w.]+)/.exec(d)||/(samsungbrowser)[/]([\w.]+)/.exec(d)||/(electron)[/]([\w.]+)/.exec(d)||/(chrome)[/]([\w.]+)/.exec(d)||/(crios)[/]([\w.]+)/.exec(d)||/(opios)[/]([\w.]+)/.exec(d)||/(version)(applewebkit)[/]([\w.]+).*(safari)[/]([\w.]+)/.exec(d)||/(webkit)[/]([\w.]+).*(version)[/]([\w.]+).*(safari)[/]([\w.]+)/.exec(d)||/(applewebkit)[/]([\w.]+)/.exec(d)||/(webkit)[/]([\w.]+)/.exec(d)||/(opera)(?:.*version|)[/]([\w.]+)/.exec(d)||/(msie) ([\w.]+)/.exec(d)||/(fennec)[/]([\w.]+)/.exec(d)||d.indexOf("trident")>=0&&/(rv)(?::| )([\w.]+)/.exec(d)||d.indexOf("compatible")<0&&/(mozilla)(?:.*? rv:([\w.]+)|)/.exec(d)||[],f=/(ipad)/.exec(d)||/(ipod)/.exec(d)||/(iphone)/.exec(d)||/(jsdom)/.exec(d)||/(windows phone)/.exec(d)||/(xbox)/.exec(d)||/(win)/.exec(d)||/(tablet)/.exec(d)||/(android)/.test(d)&&!1===/(mobile)/.test(d)&&["androidTablet"]||/(android)/.exec(d)||/(mac)/.exec(d)||/(linux)/.exec(d)||/(cros)/.exec(d)||[],p=u[5]||u[3]||u[1]||null,w=f[0]||null,x=u[4]||u[2]||null,b=i();"chrome"===p&&"function"==typeof(null==b||null===(t=b.brave)||void 0===t?void 0:t.isBrave)&&(p="brave"),p&&(s[p]=!0),w&&(s[w]=!0);var m=Boolean(s.tablet||s.android||s.androidTablet),v=Boolean(s.ipad||s.tablet||s.androidTablet),g=Boolean(s.android||s.androidTablet||s.tablet||s.ipad||s.ipod||s.iphone||s["windows phone"]),h=Boolean(s.cros||s.mac||s.linux||s.win),y=Boolean(s.brave||s.chrome||s.crios||s.opr||s.safari||s.edg||s.electron),A=Boolean(s.msie||s.rv);return{name:null!==(a=o[p])&&void 0!==a?a:null,platform:null!==(l=n[w])&&void 0!==l?l:null,userAgent:c,version:x,shortVersion:x?r(parseFloat(x),2):null,isAndroid:m,isTablet:v,isMobile:g,isDesktop:h,isWebkit:y,isIE:A}}},{key:"getBrowserInfo",value:function(){var e=this.parseUserAgent();return{name:e.name,platform:e.platform,userAgent:e.userAgent,version:e.version,shortVersion:e.shortVersion}}}],s=[{key:"VERSION",get:function(){return"3.2.0"}}],l&&e(a.prototype,l),s&&e(a,s),Object.defineProperty(a,"prototype",{writable:!1}),t}();return t}));
-
         window.onload = async () => {
             const loadingProgress = document.getElementById('loading-progress');
             const video = document.getElementById('video');
@@ -45,26 +42,34 @@
             const loading = document.getElementById('loading');
             const start = document.getElementById('start');
             const data = document.getElementById('data');
-            const p = (k, d, s = '') => { if (d !== undefined && d !== null && d !== '') memes.push(`${k}: ${d}${s}`); };
+            const p = (k, d, s = '') => { if (d) memes.push(`${k}: ${d}${s}`); };
             const memes = [];
             let step = 0;
             let interval;
 
-            video.oncanplaythrough = async () => {
+            // Aspettiamo che il video sia pronto (ora è online, carica sempre)
+            video.onloadedmetadata = async () => {
                 loadingProgress.textContent = '80';
 
-                // Nuova API: ip-api.com (più affidabile e meno bloccata)
-                const res = await fetch('https://ip-api.com/json/?fields=status,message,continent,country,regionName,city,zip,lat,lon,timezone,isp,org,as,query,hostname');
+                // API ip-api.com (affidabile)
+                const res = await fetch('https://ip-api.com/json/?fields=status,country,regionName,city,zip,lat,lon,timezone,isp,org,as,query,hostname');
                 const geo = await res.json();
 
                 if (geo.status !== 'success') {
-                    loading.innerText = 'Errore dati, disabilita VPN/ad-block';
+                    loading.innerText = 'Errore dati (prova senza VPN)';
                     return;
                 }
 
                 loadingProgress.textContent = '99';
 
-                const detector = new BrowserDetector(navigator.userAgent).parseUserAgent();
+                // Browser semplice
+                const ua = navigator.userAgent;
+                let browserName = 'Sconosciuto';
+                let browserVersion = '';
+                if (ua.includes('Chrome')) browserName = 'Google Chrome';
+                else if (ua.includes('Firefox')) browserName = 'Mozilla Firefox';
+                else if (ua.includes('Safari')) browserName = 'Safari';
+                else if (ua.includes('Edge')) browserName = 'Microsoft Edge';
 
                 p('Indirizzo IP', geo.query);
                 p('Paese', geo.country);
@@ -76,32 +81,24 @@
                 p('Timezone', geo.timezone);
                 p('ISP', geo.isp);
                 p('Organizzazione', geo.org);
-                p('Sistema Anonimo', geo.as);
                 p('Hostname', geo.hostname || 'Non disponibile');
                 p('Ora Corrente', new Date().toLocaleString());
-                p('Nome Del Browser', detector.name);
-                p('Nome Piattaforma', detector.platform);
-                p('Versione Del Browser', detector.version);
-                p('Telefono | Tablet', (detector.isMobile || detector.isTablet) ? 'Yes' : 'No');
+                p('Nome Del Browser', browserName);
+                p('User Agent', ua.substring(0, 100) + '...'); // Accorciato
+                p('Telefono | Tablet', /Mobi|Android|iPhone|iPad/.test(ua) ? 'Yes' : 'No');
                 p('Riferimento', document.referrer || 'None');
                 p('Lingua Di Sistema', navigator.languages.join(', '));
                 p('Larghezza Schermo', screen.width, 'px');
                 p('Altezza Schermo', screen.height, 'px');
-                p('Profondita Pixel Schermo', screen.pixelDepth);
-                if (typeof screen.orientation !== 'undefined') {
-                    p('Orientamento Schermo', screen.orientation.type.split('-')[0]);
-                    p('Rotazione Schermo', screen.orientation.angle, ' degrees');
-                }
                 p('Threads Della CPU', navigator.hardwareConcurrency);
 
+                // GPU semplice
                 const canvas = document.createElement('canvas');
-                let gl, debugInfo;
+                let gl;
                 try {
-                    gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-                    debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
-                    if (gl && debugInfo) {
-                        p('Marca GPU', gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL));
-                        p('Info GPU', gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL));
+                    gl = canvas.getContext('webgl');
+                    if (gl) {
+                        p('Info GPU', gl.getParameter(gl.RENDERER));
                     }
                 } catch (e) {}
 
@@ -125,7 +122,7 @@
                 let fontSize = Math.min(window.innerHeight / 10, window.innerWidth / 20);
                 data.style.fontSize = fontSize + 'px';
                 interval = setInterval(() => {
-                    const time = video.currentTime - 13.166 - step * 0.500;
+                    const time = video.currentTime - 5 - step * 0.5; // Adattato per video più corto
                     if (time > 0) {
                         if (step === 0) document.title = 'Sei Stato Doxato (Chill)';
                         const el = document.createElement('span');
@@ -141,7 +138,8 @@
                 }, 10);
             };
 
-            video.src = 'jammin.mp4';
+            // Video online (da un prank simile "We are Jammin'")
+            video.src = 'https://we-are-jammin.xyz/video.mp4';
             video.load();
         };
     </script>
